@@ -21,7 +21,7 @@ const MILITARY_LABELS = {
     range: "Strzelnica wojskowa",
     office: "Biuro wojskowe",
     danger_area: "Strefa niebezpieczna",
-    shelter: "Schron",
+    shelter: "Schrony",
     bunker: "Bunkier",
 };
 
