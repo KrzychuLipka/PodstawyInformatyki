@@ -30,6 +30,7 @@ export default function MilitaryOSMLayer() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
 
+
     const [lineColor, setLineColor] = useState("#ff0000");
     const [lineWeight, setLineWeight] = useState(6);
     const [lineOpacity, setLineOpacity] = useState(1);
@@ -44,12 +45,18 @@ export default function MilitaryOSMLayer() {
         const url = `/data/${type}.json`;
 
         try {
-            const res = await fetch(url);
-            if (!res.ok) return;
-            const geojson = await res.json();
+            const result = await fetch(url)
+
+            if (!result.ok) {
+                console.error("File not found.", url);
+                setLoading(false);
+                return;
+            }
+
+            const geojson = await result.json()
             setData(geojson);
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            console.error("File read error", error);
         } finally {
             setLoading(false);
         }
