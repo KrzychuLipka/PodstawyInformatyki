@@ -1,32 +1,42 @@
-// ---- IMPORTY ----
 import { useEffect, useRef, useState } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
 
-// ---- LISTA TYPÓW ----
 const MILITARY_TYPES = [
     "barracks",
     "naval_base",
-    // TODO: Dodaj więcej typów:
-    // "airfield", "training_area", "range", "office", "danger_area", "shelter", "bunker"
+    "airfield",
+    "training_area",
+    "range",
+    "office",
+    "danger_area",
+    "shelter",
+    "bunker",
 ];
 
-// ---- ETYKIETY ----
 const MILITARY_LABELS = {
     barracks: "Koszary",
     naval_base: "Baza morska",
-    // TODO: Dodaj tłumaczenia dla nowych typów
+    airfield: "Lotnisko wojskowe",
+    training_area: "Poligon szkoleniowy",
+    range: "Strzelnica wojskowa",
+    office: "Biuro wojskowe",
+    danger_area: "Strefa niebezpieczna",
+    shelter: "Schrony",
+    bunker: "Bunkier",
 };
 
-// ---- KOMPONENT ----
 export default function MilitaryOSMLayer() {
     const [militaryType, setMilitaryType] = useState("barracks");
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const [lineColor, setLineColor] = useState("#ff0000");
+    const [lineWeight, setLineWeight] = useState(6);
+    const [lineOpacity, setLineOpacity] = useState(1);
+
     const layerRef = useRef(null);
     const map = useMap();
 
-    // ---- FUNKCJA POBIERANIA DANYCH ----
     const fetchData = async (type) => {
         setLoading(true);
         setData(null);
@@ -35,50 +45,35 @@ export default function MilitaryOSMLayer() {
 
         try {
             const res = await fetch(url);
-
-            if (!res.ok) {
-                console.error("Nie mogę znaleźć pliku:", url);
-                return;
-            }
-
+            if (!res.ok) return;
             const geojson = await res.json();
             setData(geojson);
-        } catch (error) {
-            console.error("Błąd odczytu pliku:", error);
+        } catch (e) {
+            console.error(e);
         } finally {
             setLoading(false);
         }
     };
 
-
-    // ---- Pobieranie danych przy zmianie typu ----
     useEffect(() => {
         fetchData(militaryType);
     }, [militaryType]);
 
-    // ---- Dopasowanie widoku mapy ----
     useEffect(() => {
         if (!data || !layerRef.current) return;
-
         const bounds = layerRef.current.getBounds();
-
-        if (bounds.isValid()) {
-            map.fitBounds(bounds, { animate: true });
-        }
+        if (bounds.isValid()) map.fitBounds(bounds, { animate: true });
     }, [data, map]);
 
-    // ---- RENDER ----
+    const featureCount = data?.features?.length || 0;
+
     return (
         <>
-            {/* ---- LOADER ---- */}
             {loading && (
                 <div
                     style={{
                         position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100vw",
-                        height: "100vh",
+                        inset: 0,
                         background: "rgba(0,0,0,0.5)",
                         zIndex: 99999,
                         display: "flex",
@@ -93,19 +88,17 @@ export default function MilitaryOSMLayer() {
                 </div>
             )}
 
-            {/* ---- PANEL PRZYCISKÓW ---- */}
             <div
                 style={{
                     position: "absolute",
                     top: "20px",
-                    left: "20px",
+                    left: "80px",
                     zIndex: 9999,
                     background: "rgba(255,255,255,0.9)",
                     padding: "10px",
                     borderRadius: "8px",
                     boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-                    width: "80vw",
-                    // TODO: Można przesunąć panel niżej, aby nie zasłaniał zoom controls
+                    width: "65vw",
                 }}
             >
                 <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
@@ -116,7 +109,7 @@ export default function MilitaryOSMLayer() {
                     <button
                         key={type}
                         onClick={() => setMilitaryType(type)}
-                        title={`Pokaż obiekty typu: ${MILITARY_LABELS[type] || type}`}
+                        title={MILITARY_LABELS[type]}
                         style={{
                             margin: "4px",
                             padding: "6px 10px",
@@ -127,23 +120,121 @@ export default function MilitaryOSMLayer() {
                             cursor: "pointer",
                         }}
                     >
-                        {MILITARY_LABELS[type] || type}
+                        {MILITARY_LABELS[type]}
                     </button>
                 ))}
             </div>
 
-            {/* ---- WARSTWA GEOJSON ---- */}
+            <div
+                style={{
+                    position: "absolute",
+                    bottom: "20px",
+                    left: "20px",
+                    zIndex: 9999,
+                    background: "rgba(255,255,255,0.9)",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                    minWidth: "220px",
+                }}
+            >
+                <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+                    Legenda
+                </div>
+
+                <div>
+                    <strong>Typ:</strong> {MILITARY_LABELS[militaryType]}
+                </div>
+
+                <div>
+                    <strong>Liczba obiektów:</strong> {featureCount}
+                </div>
+
+                <div
+                    style={{
+                        marginTop: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                    }}
+                >
+                    <div
+                        style={{
+                            width: "20px",
+                            height: "12px",
+                            background: lineColor,
+                            opacity: lineOpacity * 0.45,
+                            border: `2px solid ${lineColor}`,
+                            marginRight: "8px",
+                        }}
+                    />
+                    Obiekt wojskowy
+                </div>
+            </div>
+
+            <div
+                style={{
+                    position: "absolute",
+                    bottom: "20px",
+                    right: "20px",
+                    zIndex: 9999,
+                    background: "rgba(255,255,255,0.9)",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                    width: "220px",
+                }}
+            >
+                <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
+                    Styl warstwy
+                </div>
+
+                <div style={{ marginBottom: "8px" }}>
+                    <label>Kolor:</label>
+                    <input
+                        type="color"
+                        value={lineColor}
+                        onChange={(e) => setLineColor(e.target.value)}
+                        style={{ width: "100%" }}
+                    />
+                </div>
+
+                <div style={{ marginBottom: "8px" }}>
+                    <label>Grubość: {lineWeight}</label>
+                    <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={lineWeight}
+                        onChange={(e) => setLineWeight(Number(e.target.value))}
+                        style={{ width: "100%" }}
+                    />
+                </div>
+
+                <div>
+                    <label>Przezroczystość: {lineOpacity}</label>
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={lineOpacity}
+                        onChange={(e) => setLineOpacity(Number(e.target.value))}
+                        style={{ width: "100%" }}
+                    />
+                </div>
+            </div>
+
             {data && (
                 <GeoJSON
                     key={militaryType}
                     data={data}
                     ref={layerRef}
                     style={() => ({
-                        color: "#ff0000",
-                        weight: 6,
-                        opacity: 1,
-                        fillColor: "#ff0000",
-                        fillOpacity: 0.45,
+                        color: lineColor,
+                        weight: lineWeight,
+                        opacity: lineOpacity,
+                        fillColor: lineColor,
+                        fillOpacity: lineOpacity * 0.45,
                     })}
                 />
             )}
