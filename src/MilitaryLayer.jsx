@@ -67,6 +67,9 @@ export default function MilitaryOSMLayer() {
         }
     }, [data, map]);
 
+    const featureCount = data?.features?.length || 0;
+
+
     // ---- RENDER ----
     return (
         <>
@@ -130,6 +133,54 @@ export default function MilitaryOSMLayer() {
                         {MILITARY_LABELS[type] || type}
                     </button>
                 ))}
+            </div>
+
+            {/* ---- LEGENDA ---- */}
+            <div
+                style={{
+                    position: "absolute",
+                    bottom: "20px",
+                    left: "20px",
+                    zIndex: 9999,
+                    background: "rgba(255,255,255,0.9)",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                    minWidth: "220px",
+                }}
+            >
+                <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
+                    Legenda
+                </div>
+
+                <div>
+                    <strong>Typ:</strong>{" "}
+                    {MILITARY_LABELS[militaryType] || militaryType}
+                </div>
+
+                <div>
+                    <strong>Liczba obiektów:</strong> {featureCount}
+                </div>
+
+                <div
+                    style={{
+                        marginTop: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                    }}
+                >
+                    <div
+                        style={{
+                            width: "20px",
+                            height: "12px",
+                            background: "#ff0000",
+                            opacity: 0.45,
+                            border: "2px solid #ff0000",
+                            marginRight: "8px",
+                        }}
+                    />
+                    Obiekt wojskowy
+                </div>
             </div>
 
             {/* ---- WARSTWA GEOJSON ---- */}
