@@ -4,14 +4,25 @@ import { GeoJSON, useMap } from "react-leaflet";
 const MILITARY_TYPES = [
     "barracks",
     "naval_base",
-    // TODO: Dodaj więcej typów:
-    // "airfield", "training_area", "range", "office", "danger_area", "shelter", "bunker"
+    "airfield",
+    "training_area",
+    "range",
+    "office",
+    "danger_area",
+    "shelter",
+    "bunker",
 ];
 
 const MILITARY_LABELS = {
     barracks: "Koszary",
     naval_base: "Baza morska",
-    // TODO: Dodaj tłumaczenia dla nowych typów
+    airfield: "Lotnisko wojskowe",
+    training_area: "Poligon szkoleniowy",
+    range: "Strzelnica wojskowa",
+    office: "Biuro wojskowe",
+    danger_area: "Strefa niebezpieczna",
+    shelter: "Schron",
+    bunker: "Bunkier",
 };
 
 export default function MilitaryOSMLayer() {
@@ -19,12 +30,12 @@ export default function MilitaryOSMLayer() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const layerRef = useRef(null);
-    const map = useMap();
-
     const [lineColor, setLineColor] = useState("#ff0000");
     const [lineWeight, setLineWeight] = useState(6);
     const [lineOpacity, setLineOpacity] = useState(1);
+
+    const layerRef = useRef(null);
+    const map = useMap();
 
     const fetchData = async (type) => {
         setLoading(true);
@@ -34,21 +45,15 @@ export default function MilitaryOSMLayer() {
 
         try {
             const res = await fetch(url);
-
-            if (!res.ok) {
-                console.error("Nie mogę znaleźć pliku:", url);
-                return;
-            }
-
+            if (!res.ok) return;
             const geojson = await res.json();
             setData(geojson);
-        } catch (error) {
-            console.error("Błąd odczytu pliku:", error);
+        } catch (e) {
+            console.error(e);
         } finally {
             setLoading(false);
         }
     };
-
 
     useEffect(() => {
         fetchData(militaryType);
@@ -56,16 +61,11 @@ export default function MilitaryOSMLayer() {
 
     useEffect(() => {
         if (!data || !layerRef.current) return;
-
         const bounds = layerRef.current.getBounds();
-
-        if (bounds.isValid()) {
-            map.fitBounds(bounds, { animate: true });
-        }
+        if (bounds.isValid()) map.fitBounds(bounds, { animate: true });
     }, [data, map]);
 
     const featureCount = data?.features?.length || 0;
-
 
     return (
         <>
@@ -73,10 +73,7 @@ export default function MilitaryOSMLayer() {
                 <div
                     style={{
                         position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100vw",
-                        height: "100vh",
+                        inset: 0,
                         background: "rgba(0,0,0,0.5)",
                         zIndex: 99999,
                         display: "flex",
@@ -95,14 +92,13 @@ export default function MilitaryOSMLayer() {
                 style={{
                     position: "absolute",
                     top: "20px",
-                    left: "20px",
+                    left: "80px",
                     zIndex: 9999,
                     background: "rgba(255,255,255,0.9)",
                     padding: "10px",
                     borderRadius: "8px",
                     boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-                    width: "80vw",
-                    // TODO: Można przesunąć panel niżej, aby nie zasłaniał zoom controls
+                    width: "65vw",
                 }}
             >
                 <div style={{ fontWeight: "bold", marginBottom: "6px" }}>
@@ -113,7 +109,7 @@ export default function MilitaryOSMLayer() {
                     <button
                         key={type}
                         onClick={() => setMilitaryType(type)}
-                        title={`Pokaż obiekty typu: ${MILITARY_LABELS[type] || type}`}
+                        title={MILITARY_LABELS[type]}
                         style={{
                             margin: "4px",
                             padding: "6px 10px",
@@ -124,7 +120,7 @@ export default function MilitaryOSMLayer() {
                             cursor: "pointer",
                         }}
                     >
-                        {MILITARY_LABELS[type] || type}
+                        {MILITARY_LABELS[type]}
                     </button>
                 ))}
             </div>
@@ -147,8 +143,7 @@ export default function MilitaryOSMLayer() {
                 </div>
 
                 <div>
-                    <strong>Typ:</strong>{" "}
-                    {MILITARY_LABELS[militaryType] || militaryType}
+                    <strong>Typ:</strong> {MILITARY_LABELS[militaryType]}
                 </div>
 
                 <div>
@@ -166,9 +161,9 @@ export default function MilitaryOSMLayer() {
                         style={{
                             width: "20px",
                             height: "12px",
-                            background: "#ff0000",
-                            opacity: 0.45,
-                            border: "2px solid #ff0000",
+                            background: lineColor,
+                            opacity: lineOpacity * 0.45,
+                            border: `2px solid ${lineColor}`,
                             marginRight: "8px",
                         }}
                     />
