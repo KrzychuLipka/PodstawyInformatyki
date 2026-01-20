@@ -149,26 +149,6 @@ export default function MilitaryOSMLayer() {
                 <div>
                     <strong>Liczba obiektów:</strong> {featureCount}
                 </div>
-
-                <div
-                    style={{
-                        marginTop: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                    }}
-                >
-                    <div
-                        style={{
-                            width: "20px",
-                            height: "12px",
-                            background: lineColor,
-                            opacity: lineOpacity * 0.45,
-                            border: `2px solid ${lineColor}`,
-                            marginRight: "8px",
-                        }}
-                    />
-                    Obiekt wojskowy
-                </div>
             </div>
 
             <div
