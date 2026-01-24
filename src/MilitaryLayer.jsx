@@ -45,18 +45,22 @@ export default function MilitaryOSMLayer() {
         const url = `/data/${type}.json`;
 
         try {
-            const result = await fetch(url)
+            const result = await fetch(url);
 
             if (!result.ok) {
-                console.error("File not found.", url);
-                setLoading(false);
-                return;
+                throw new Error(`HTTP error ${result.status}`);
             }
 
-            const geojson = await result.json()
+            const contentType = result.headers.get("content-type");
+            if (!contentType?.includes("application/json")) {
+                throw new Error("Invalid JSON response");
+            }
+
+            const geojson = await result.json();
             setData(geojson);
+
         } catch (error) {
-            console.error("File read error", error);
+            console.error("File read error:", error);
         } finally {
             setLoading(false);
         }
